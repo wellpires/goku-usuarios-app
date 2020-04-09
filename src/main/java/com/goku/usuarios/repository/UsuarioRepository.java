@@ -1,13 +1,13 @@
 package com.goku.usuarios.repository;
 
-import java.util.Optional;
+import java.util.List;
 
 import org.springframework.data.repository.CrudRepository;
 
 import com.goku.usuarios.model.Usuario;
 
-public interface UsuarioRepository extends CrudRepository<Usuario, Long> {
+public interface UsuarioRepository extends CrudRepository<Usuario, String> {
 
-	Optional<Usuario> findByLogin(String login);
+	List<Usuario> findAll();
 
 }

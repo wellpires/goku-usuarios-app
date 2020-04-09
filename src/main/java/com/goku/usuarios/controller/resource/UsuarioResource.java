@@ -11,11 +11,11 @@ public interface UsuarioResource {
 
 	public ResponseEntity<Void> criarUsuario(NovoUsuarioDTO novoUsuarioDTO);
 
-	public ResponseEntity<Void> editarUsuario(Long id, EditarUsuarioDTO editarUsuarioDTO);
+	public ResponseEntity<Void> editarUsuario(String login, EditarUsuarioDTO editarUsuarioDTO);
 
-	public ResponseEntity<Void> deletarUsuario(Long id);
+	public ResponseEntity<Void> deletarUsuario(String login);
 
-	public ResponseEntity<DetalheUsuarioResponse> buscarUsuario(Long id);
+	public ResponseEntity<DetalheUsuarioResponse> buscarUsuario(String login);
 
 	public ResponseEntity<UsuariosResponse> listarUsuarios();
 

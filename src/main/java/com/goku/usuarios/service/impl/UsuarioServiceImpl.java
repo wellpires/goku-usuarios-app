@@ -1,11 +1,20 @@
 package com.goku.usuarios.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.goku.usuarios.builder.UsuarioBuilder;
+import com.goku.usuarios.dto.DetalheUsuarioDTO;
+import com.goku.usuarios.dto.EditarUsuarioDTO;
 import com.goku.usuarios.dto.NovoUsuarioDTO;
+import com.goku.usuarios.dto.UsuarioDTO;
 import com.goku.usuarios.exception.UsuarioDuplicadoException;
+import com.goku.usuarios.exception.UsuarioNotFoundException;
+import com.goku.usuarios.function.Usuario2DetalheUsuarioDTOFunction;
+import com.goku.usuarios.function.Usuario2UsuarioDTOFunction;
 import com.goku.usuarios.model.Usuario;
 import com.goku.usuarios.repository.UsuarioRepository;
 import com.goku.usuarios.service.UsuarioService;
@@ -19,7 +28,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 	@Override
 	public void criarUsuario(NovoUsuarioDTO novoUsuarioDTO) {
 
-		if (usuarioRepository.findByLogin(novoUsuarioDTO.getLogin()).isPresent()) {
+		if (usuarioRepository.findById(novoUsuarioDTO.getLogin()).isPresent()) {
 			throw new UsuarioDuplicadoException();
 		}
 
@@ -27,6 +36,30 @@ public class UsuarioServiceImpl implements UsuarioService {
 				.build();
 		usuarioRepository.save(usuario);
 
+	}
+
+	@Override
+	public List<UsuarioDTO> listarUsuarios() {
+		return usuarioRepository.findAll().stream().map(new Usuario2UsuarioDTOFunction()).collect(Collectors.toList());
+	}
+
+	@Override
+	public void deletarUsuario(String login) {
+		Usuario usuario = usuarioRepository.findById(login).orElseThrow(UsuarioNotFoundException::new);
+		usuarioRepository.delete(usuario);
+	}
+
+	@Override
+	public void editarUsuario(String login, EditarUsuarioDTO editarUsuarioDTO) {
+		Usuario usuario = usuarioRepository.findById(login).orElseThrow(UsuarioNotFoundException::new);
+		usuario.setSenha(editarUsuarioDTO.getSenha());
+		usuarioRepository.save(usuario);
+	}
+
+	@Override
+	public DetalheUsuarioDTO buscarUsuario(String login) {
+		return usuarioRepository.findById(login).map(new Usuario2DetalheUsuarioDTOFunction())
+				.orElseThrow(UsuarioNotFoundException::new);
 	}
 
 }

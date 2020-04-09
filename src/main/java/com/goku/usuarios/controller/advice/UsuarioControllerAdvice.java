@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.goku.usuarios.builder.ErrorResponseBuilder;
 import com.goku.usuarios.exception.UsuarioDuplicadoException;
+import com.goku.usuarios.exception.UsuarioNotFoundException;
 import com.goku.usuarios.response.ErrorResponse;
 
 @RestControllerAdvice
@@ -24,6 +25,16 @@ public class UsuarioControllerAdvice {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ErrorResponseBuilder().message(exception.getMessage()).build());
 
+	}
+
+	@ExceptionHandler(UsuarioNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleUsuarioNotFoundException(
+			UsuarioNotFoundException usuarioNotFoundException) {
+
+		log.error(usuarioNotFoundException.getMessage(), usuarioNotFoundException);
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(new ErrorResponseBuilder().message(usuarioNotFoundException.getMessage()).build());
 	}
 
 	@ExceptionHandler(UsuarioDuplicadoException.class)

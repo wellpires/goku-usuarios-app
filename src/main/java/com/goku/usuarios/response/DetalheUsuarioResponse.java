@@ -8,6 +8,10 @@ public class DetalheUsuarioResponse {
 	@JsonProperty("usuario-detalhe")
 	private DetalheUsuarioDTO detalheUsuarioDTO;
 
+	public DetalheUsuarioResponse(DetalheUsuarioDTO detalheUsuarioDTO) {
+		this.detalheUsuarioDTO = detalheUsuarioDTO;
+	}
+
 	public DetalheUsuarioDTO getDetalheUsuarioDTO() {
 		return detalheUsuarioDTO;
 	}
