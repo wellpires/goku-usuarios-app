@@ -5,6 +5,8 @@ import java.io.Serializable;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
+import com.goku.usuarios.util.UsuarioUtils;
+
 @RedisHash("usuario")
 public class Usuario implements Serializable {
 
@@ -12,7 +14,8 @@ public class Usuario implements Serializable {
 
 	@Id
 	private String login;
-	private String senha;
+
+	private byte[] senha;
 
 	public String getLogin() {
 		return login;
@@ -22,12 +25,12 @@ public class Usuario implements Serializable {
 		this.login = login;
 	}
 
-	public String getSenha() {
+	public byte[] getSenha() {
 		return senha;
 	}
 
 	public void setSenha(String senha) {
-		this.senha = senha;
+		this.senha = UsuarioUtils.hashPassword(senha);
 	}
 
 }

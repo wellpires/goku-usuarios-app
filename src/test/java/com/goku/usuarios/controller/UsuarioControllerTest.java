@@ -25,6 +25,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -45,6 +46,7 @@ import com.goku.usuarios.response.DetalheUsuarioResponse;
 import com.goku.usuarios.service.UsuarioService;
 
 @SpringBootTest
+@TestPropertySource(properties = "message.error-generic = Erro interno!")
 class UsuarioControllerTest {
 
 	private static final String PATH_APP = "/api/v1/usuarios";
@@ -214,8 +216,7 @@ class UsuarioControllerTest {
 	@Test
 	void deveBuscarUsuario() throws Exception {
 
-		DetalheUsuarioDTO detalheUsuario = new DetalheUsuarioDTOBuilder().login("usuarioTeste123")
-				.senha("senhaTeste123").build();
+		DetalheUsuarioDTO detalheUsuario = new DetalheUsuarioDTOBuilder().login("usuarioTeste123").build();
 		when(usuarioService.buscarUsuario(anyString())).thenReturn(detalheUsuario);
 
 		Map<String, Object> parameters = new HashMap<>();
@@ -230,7 +231,6 @@ class UsuarioControllerTest {
 
 		assertThat(detalheUsuarioResponse.getDetalheUsuarioDTO()).isNotNull();
 		assertThat(detalheUsuarioResponse.getDetalheUsuarioDTO().getLogin()).isEqualTo(detalheUsuario.getLogin());
-		assertThat(detalheUsuarioResponse.getDetalheUsuarioDTO().getSenha()).isEqualTo(detalheUsuario.getSenha());
 
 	}
 

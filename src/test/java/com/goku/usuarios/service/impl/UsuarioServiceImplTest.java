@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
 
 import com.goku.usuarios.builder.EditarUsuarioDTOBuilder;
 import com.goku.usuarios.builder.NovoUsuarioDTOBuilder;
@@ -29,6 +30,7 @@ import com.goku.usuarios.model.Usuario;
 import com.goku.usuarios.repository.UsuarioRepository;
 
 @SpringBootTest
+@TestPropertySource(properties = "message.error-generic = Erro interno!")
 class UsuarioServiceImplTest {
 
 	@Mock
@@ -53,7 +55,7 @@ class UsuarioServiceImplTest {
 	@Test
 	void naoDeveCriarUsuarioPoisJaExiste() {
 
-		Usuario usuarioBuilt = new UsuarioBuilder().build();
+		Usuario usuarioBuilt = new UsuarioBuilder().login("usuarioTeste").senha("senhaTeste").build();
 		when(usuarioRepository.findById(anyString())).thenReturn(Optional.ofNullable(usuarioBuilt));
 
 		NovoUsuarioDTO novoUsuarioDTO = new NovoUsuarioDTOBuilder().login("usuario123").senha("senha123").build();
@@ -78,7 +80,7 @@ class UsuarioServiceImplTest {
 	@Test
 	void deveDeletarUsuario() {
 
-		Usuario usuarioBuilt = new UsuarioBuilder().build();
+		Usuario usuarioBuilt = new UsuarioBuilder().login("usuarioTeste").senha("senhaTeste").build();
 		when(usuarioRepository.findById(anyString())).thenReturn(Optional.ofNullable(usuarioBuilt));
 
 		usuarioService.deletarUsuario("loginTeste");
@@ -102,7 +104,7 @@ class UsuarioServiceImplTest {
 	@Test
 	void deveEditarUsuario() {
 
-		Usuario usuarioBuilt = new UsuarioBuilder().build();
+		Usuario usuarioBuilt = new UsuarioBuilder().login("usuarioTeste").senha("senhaTeste").build();
 		when(usuarioRepository.findById(anyString())).thenReturn(Optional.ofNullable(usuarioBuilt));
 
 		usuarioService.editarUsuario("usuario123", new EditarUsuarioDTOBuilder().senha("senha123").build());
@@ -133,12 +135,19 @@ class UsuarioServiceImplTest {
 		DetalheUsuarioDTO usuarioFound = usuarioService.buscarUsuario("usuario123");
 
 		assertThat(usuarioFound.getLogin()).isEqualTo("loginTeste123");
-		assertThat(usuarioFound.getSenha()).isEqualTo("senhaTeste123");
+		verify(usuarioRepository, times(1)).findById(anyString());
 
 	}
 
 	@Test
 	void naoDeveBuscarUsuarioPoisUsuarioNaoExiste() {
+
+		Usuario usuarioBuilt = null;
+		when(usuarioRepository.findById(anyString())).thenReturn(Optional.ofNullable(usuarioBuilt));
+
+		assertThrows(UsuarioNotFoundException.class, () -> usuarioService.buscarUsuario("usuario123"));
+
+		verify(usuarioRepository, times(1)).findById(anyString());
 
 	}
 
