@@ -56,7 +56,6 @@ public class UsuarioServiceImpl implements UsuarioService {
 
 	@Override
 	@CachePut(cacheNames = "usuario-cache")
-	@CacheEvict(cacheNames = { "listar-usuarios-cache" }, allEntries = true)
 	public void editarUsuario(String login, EditarUsuarioDTO editarUsuarioDTO) {
 		Usuario usuario = usuarioRepository.findById(login).orElseThrow(UsuarioNotFoundException::new);
 		usuario.setSenha(editarUsuarioDTO.getSenha());
