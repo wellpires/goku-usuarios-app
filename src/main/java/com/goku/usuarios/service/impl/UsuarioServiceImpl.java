@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 
 import com.goku.usuarios.builder.UsuarioBuilder;
@@ -26,6 +28,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 	private UsuarioRepository usuarioRepository;
 
 	@Override
+	@CacheEvict(cacheNames = { "listar-usuarios-cache", "usuario-cache" }, allEntries = true)
 	public void criarUsuario(NovoUsuarioDTO novoUsuarioDTO) {
 
 		if (usuarioRepository.findById(novoUsuarioDTO.getLogin()).isPresent()) {
@@ -44,12 +47,16 @@ public class UsuarioServiceImpl implements UsuarioService {
 	}
 
 	@Override
+	@CacheEvict(cacheNames = { "listar-usuarios-cache" }, allEntries = true)
+	@CachePut(cacheNames = "usuario-cache")
 	public void deletarUsuario(String login) {
 		Usuario usuario = usuarioRepository.findById(login).orElseThrow(UsuarioNotFoundException::new);
 		usuarioRepository.delete(usuario);
 	}
 
 	@Override
+	@CachePut(cacheNames = "usuario-cache")
+	@CacheEvict(cacheNames = { "listar-usuarios-cache" }, allEntries = true)
 	public void editarUsuario(String login, EditarUsuarioDTO editarUsuarioDTO) {
 		Usuario usuario = usuarioRepository.findById(login).orElseThrow(UsuarioNotFoundException::new);
 		usuario.setSenha(editarUsuarioDTO.getSenha());
