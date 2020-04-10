@@ -12,6 +12,9 @@ public class DetalheUsuarioResponse {
 		this.detalheUsuarioDTO = detalheUsuarioDTO;
 	}
 
+	public DetalheUsuarioResponse() {
+	}
+
 	public DetalheUsuarioDTO getDetalheUsuarioDTO() {
 		return detalheUsuarioDTO;
 	}

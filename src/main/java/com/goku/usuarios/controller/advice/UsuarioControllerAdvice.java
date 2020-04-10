@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -25,6 +26,18 @@ public class UsuarioControllerAdvice {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ErrorResponseBuilder().message(exception.getMessage()).build());
 
+	}
+
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
+			MethodArgumentNotValidException methodArgumentNotValidException) {
+
+		log.error(methodArgumentNotValidException.getMessage(), methodArgumentNotValidException);
+
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(new ErrorResponseBuilder()
+						.message(methodArgumentNotValidException.getBindingResult().getFieldError().getDefaultMessage())
+						.build());
 	}
 
 	@ExceptionHandler(UsuarioNotFoundException.class)
