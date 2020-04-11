@@ -15,7 +15,7 @@ public class Usuario implements Serializable {
 	@Id
 	private String login;
 
-	private byte[] senha;
+	private String senha;
 
 	public String getLogin() {
 		return login;
@@ -25,7 +25,7 @@ public class Usuario implements Serializable {
 		this.login = login;
 	}
 
-	public byte[] getSenha() {
+	public String getSenha() {
 		return senha;
 	}
 
