@@ -12,7 +12,7 @@ public class EditarUsuarioValidator implements ConstraintValidator<EditarUsuario
 
 	@Override
 	public boolean isValid(EditarUsuarioDTO value, ConstraintValidatorContext context) {
-		return StringUtils.isNotBlank(value.getPermissao()) || StringUtils.isNotBlank(value.getSenha());
+		return StringUtils.isNotBlank(value.getSenha());
 	}
 
 }

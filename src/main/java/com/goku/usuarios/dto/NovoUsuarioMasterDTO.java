@@ -2,7 +2,7 @@ package com.goku.usuarios.dto;
 
 import javax.validation.constraints.NotBlank;
 
-public class NovoUsuarioDTO {
+public class NovoUsuarioMasterDTO {
 
 	@NotBlank(message = "{campo.obrigatorio.login}")
 	private String login;

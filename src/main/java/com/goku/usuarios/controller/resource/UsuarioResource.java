@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.goku.usuarios.dto.EditarUsuarioDTO;
 import com.goku.usuarios.dto.NovoUsuarioDTO;
+import com.goku.usuarios.dto.NovoUsuarioMasterDTO;
 import com.goku.usuarios.response.DetalheUsuarioResponse;
 import com.goku.usuarios.response.ErrorResponse;
 import com.goku.usuarios.response.UsuariosResponse;
@@ -47,4 +48,11 @@ public interface UsuarioResource {
 			@ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class) })
 	public ResponseEntity<UsuariosResponse> listarUsuarios();
 
+	@ApiOperation(value = "Cria usuário master")
+	@ApiResponses(value = { @ApiResponse(code = 204, message = "No Content"),
+			@ApiResponse(code = 400, message = "Bad Request", response = ErrorResponse.class),
+			@ApiResponse(code = 409, message = "Conflict", response = ErrorResponse.class),
+			@ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class) })
+	public ResponseEntity<Void> criarUsuarioMaster(NovoUsuarioMasterDTO novoUsuarioMasterDTO);
+	
 }

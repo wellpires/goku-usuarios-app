@@ -14,6 +14,8 @@ public interface UsuarioRepository extends CrudRepository<Usuario, String> {
 	List<Usuario> findAll();
 
 	@Cacheable(value = "usuario-cache")
-	Optional<Usuario> findById(String cep);
+	Optional<Usuario> findById(String login);
+
+	Optional<Usuario> findByPermissao(String permissao);
 
 }

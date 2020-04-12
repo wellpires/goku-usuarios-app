@@ -20,6 +20,7 @@ import com.goku.usuarios.controller.resource.UsuarioResource;
 import com.goku.usuarios.dto.DetalheUsuarioDTO;
 import com.goku.usuarios.dto.EditarUsuarioDTO;
 import com.goku.usuarios.dto.NovoUsuarioDTO;
+import com.goku.usuarios.dto.NovoUsuarioMasterDTO;
 import com.goku.usuarios.dto.UsuarioDTO;
 import com.goku.usuarios.response.DetalheUsuarioResponse;
 import com.goku.usuarios.response.UsuariosResponse;
@@ -66,6 +67,13 @@ public class UsuarioController implements UsuarioResource {
 	public ResponseEntity<UsuariosResponse> listarUsuarios() {
 		List<UsuarioDTO> usuarios = usuarioService.listarUsuarios();
 		return ResponseEntity.ok(new UsuariosResponse(usuarios));
+	}
+
+	@Override
+	@PostMapping(path = "/master", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Void> criarUsuarioMaster(@RequestBody @Valid NovoUsuarioMasterDTO novoUsuarioMasterDTO) {
+		usuarioService.criarUsuarioMaster(novoUsuarioMasterDTO);
+		return ResponseEntity.noContent().build();
 	}
 
 }

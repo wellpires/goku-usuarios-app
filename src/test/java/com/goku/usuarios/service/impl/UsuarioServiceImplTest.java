@@ -1,7 +1,9 @@
 package com.goku.usuarios.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -13,19 +15,24 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
 import com.goku.usuarios.builder.EditarUsuarioDTOBuilder;
 import com.goku.usuarios.builder.NovoUsuarioDTOBuilder;
+import com.goku.usuarios.builder.NovoUsuarioMasterDTOBuilder;
 import com.goku.usuarios.builder.UsuarioBuilder;
 import com.goku.usuarios.dto.DetalheUsuarioDTO;
 import com.goku.usuarios.dto.NovoUsuarioDTO;
+import com.goku.usuarios.dto.NovoUsuarioMasterDTO;
 import com.goku.usuarios.dto.UsuarioDTO;
 import com.goku.usuarios.enums.Permissao;
 import com.goku.usuarios.exception.UsuarioDuplicadoException;
+import com.goku.usuarios.exception.UsuarioMasterExistenteException;
 import com.goku.usuarios.exception.UsuarioNotFoundException;
 import com.goku.usuarios.model.Usuario;
 import com.goku.usuarios.repository.UsuarioRepository;
@@ -46,8 +53,7 @@ class UsuarioServiceImplTest {
 		Usuario usuarioBuilt = null;
 		when(usuarioRepository.findById(anyString())).thenReturn(Optional.ofNullable(usuarioBuilt));
 
-		NovoUsuarioDTO novoUsuarioDTO = new NovoUsuarioDTOBuilder().login("usuario123").senha("senha123")
-				.permissao(Permissao.COMUM).build();
+		NovoUsuarioDTO novoUsuarioDTO = new NovoUsuarioDTOBuilder().login("usuario123").senha("senha123").build();
 		usuarioService.criarUsuario(novoUsuarioDTO);
 
 		verify(usuarioRepository, times(1)).save(any());
@@ -150,6 +156,42 @@ class UsuarioServiceImplTest {
 		assertThrows(UsuarioNotFoundException.class, () -> usuarioService.buscarUsuario("usuario123"));
 
 		verify(usuarioRepository, times(1)).findById(anyString());
+
+	}
+
+	@Test
+	void deveCriarUsuarioMaster() {
+
+		Usuario usuarioBuilt = null;
+		when(usuarioRepository.findByPermissao(anyString())).thenReturn(Optional.ofNullable(usuarioBuilt));
+
+		NovoUsuarioMasterDTO novoUsuarioMasterBuilt = new NovoUsuarioMasterDTOBuilder().login("loginTeste")
+				.senha("senhaTeste").build();
+		usuarioService.criarUsuarioMaster(novoUsuarioMasterBuilt);
+
+		ArgumentCaptor<Usuario> argCaptor = ArgumentCaptor.forClass(Usuario.class);
+		verify(usuarioRepository, times(1)).save(argCaptor.capture());
+		assertNotNull(argCaptor.getValue());
+		assertThat(argCaptor.getValue().getLogin()).isEqualTo(novoUsuarioMasterBuilt.getLogin());
+		assertTrue(new BCryptPasswordEncoder().matches(novoUsuarioMasterBuilt.getSenha(),
+				argCaptor.getValue().getSenha()));
+
+	}
+
+	@Test
+	void naoDeveCriarUsuarioMasterPoisJaFoiCriado() {
+
+		Usuario usuarioBuilt = new UsuarioBuilder().login("loginTesteEcontrado").senha("senhaTesteEncontrado")
+				.permissao(Permissao.COMUM.name()).build();
+		when(usuarioRepository.findByPermissao(anyString())).thenReturn(Optional.ofNullable(usuarioBuilt));
+
+		NovoUsuarioMasterDTO novoUsuarioMasterBuilt = new NovoUsuarioMasterDTOBuilder().login("loginTeste")
+				.senha("senhaTeste").build();
+
+		assertThrows(UsuarioMasterExistenteException.class,
+				() -> usuarioService.criarUsuarioMaster(novoUsuarioMasterBuilt));
+
+		verify(usuarioRepository, never()).save(any(Usuario.class));
 
 	}
 

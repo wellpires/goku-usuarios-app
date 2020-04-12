@@ -38,14 +38,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goku.usuarios.builder.DetalheUsuarioDTOBuilder;
 import com.goku.usuarios.builder.EditarUsuarioDTOBuilder;
 import com.goku.usuarios.builder.NovoUsuarioDTOBuilder;
+import com.goku.usuarios.builder.NovoUsuarioMasterDTOBuilder;
 import com.goku.usuarios.builder.UsuarioDTOBuilder;
 import com.goku.usuarios.controller.advice.UsuarioControllerAdvice;
 import com.goku.usuarios.dto.DetalheUsuarioDTO;
 import com.goku.usuarios.dto.EditarUsuarioDTO;
 import com.goku.usuarios.dto.NovoUsuarioDTO;
+import com.goku.usuarios.dto.NovoUsuarioMasterDTO;
 import com.goku.usuarios.dto.UsuarioDTO;
-import com.goku.usuarios.enums.Permissao;
 import com.goku.usuarios.exception.UsuarioDuplicadoException;
+import com.goku.usuarios.exception.UsuarioMasterExistenteException;
 import com.goku.usuarios.exception.UsuarioNotFoundException;
 import com.goku.usuarios.response.DetalheUsuarioResponse;
 import com.goku.usuarios.response.UsuariosResponse;
@@ -61,6 +63,7 @@ class UsuarioControllerTest {
 	private static final String DELETE_DELETAR_USUARIO = PATH_APP.concat("/{login}");
 	private static final String GET_BUSCAR_USUARIO = PATH_APP.concat("/{login}");
 	private static final String GET_LISTA_USUARIOS = PATH_APP;
+	private static final String POST_CRIAR_USUARIO_MASTER = PATH_APP.concat("/master");
 
 	@InjectMocks
 	private UsuarioController usuarioController;
@@ -85,7 +88,7 @@ class UsuarioControllerTest {
 	void deveCriarUsuario() throws Exception {
 
 		NovoUsuarioDTO novoUsuarioDTOBuilt = new NovoUsuarioDTOBuilder().login("loginTeste123").senha("senhaTeste123")
-				.permissao(Permissao.COMUM).build();
+				.build();
 
 		mockMVC.perform(post(POST_CRIAR_USUARIO).contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(novoUsuarioDTOBuilt))).andDo(print())
@@ -101,7 +104,7 @@ class UsuarioControllerTest {
 		doThrow(UsuarioDuplicadoException.class).when(usuarioService).criarUsuario(any(NovoUsuarioDTO.class));
 
 		NovoUsuarioDTO novoUsuarioDTOBuilt = new NovoUsuarioDTOBuilder().login("loginTeste123").senha("senhaTeste123")
-				.permissao(Permissao.MASTER).build();
+				.build();
 
 		mockMVC.perform(post(POST_CRIAR_USUARIO).contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(novoUsuarioDTOBuilt))).andDo(print())
@@ -138,74 +141,13 @@ class UsuarioControllerTest {
 	}
 
 	@Test
-	void naoDeveCriarUsuarioPoisOCampoPermissaoNaoFoiFornecido() throws JsonProcessingException, Exception {
-
-		NovoUsuarioDTO novoUsuarioDTOBuilt = new NovoUsuarioDTOBuilder().login("loginTeste123").senha("senhaTeste123")
-				.build();
-
-		mockMVC.perform(post(POST_CRIAR_USUARIO).contentType(MediaType.APPLICATION_JSON)
-				.content(mapper.writeValueAsString(novoUsuarioDTOBuilt))).andDo(print())
-				.andExpect(status().isBadRequest());
-
-		verify(usuarioService, never()).criarUsuario(any(NovoUsuarioDTO.class));
-
-	}
-
-	@Test
-	void naoDeveCriarUsuarioPoisOCampoPermissaoEstaInvalido() throws JsonProcessingException, Exception {
-
-		NovoUsuarioDTO novoUsuarioDTOBuilt = new NovoUsuarioDTOBuilder().login("loginTeste123").senha("senhaTeste123")
-				.permissao("permissaoTeste").build();
-
-		mockMVC.perform(post(POST_CRIAR_USUARIO).contentType(MediaType.APPLICATION_JSON)
-				.content(mapper.writeValueAsString(novoUsuarioDTOBuilt))).andDo(print())
-				.andExpect(status().isBadRequest());
-
-		verify(usuarioService, never()).criarUsuario(any(NovoUsuarioDTO.class));
-
-	}
-
-	@Test
 	void deveEditarUsuario() throws Exception {
 
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("login", "usuarioTeste123");
 		URI putEditarUsuario = UriComponentsBuilder.fromPath(PUT_EDITAR_USUARIO).buildAndExpand(parameters).toUri();
 
-		EditarUsuarioDTO editarUsuarioDTO = new EditarUsuarioDTOBuilder().senha("senhaTeste123")
-				.permissao(Permissao.MASTER).build();
-
-		mockMVC.perform(put(putEditarUsuario).contentType(MediaType.APPLICATION_JSON)
-				.content(mapper.writeValueAsString(editarUsuarioDTO))).andDo(print()).andExpect(status().isNoContent());
-
-		verify(usuarioService, times(1)).editarUsuario(anyString(), any(EditarUsuarioDTO.class));
-
-	}
-
-	@Test
-	void deveEditarUsuarioApenasComOCampoPermissao() throws JsonProcessingException, Exception {
-
-		Map<String, Object> parameters = new HashMap<>();
-		parameters.put("login", "usuarioTeste123");
-		URI putEditarUsuario = UriComponentsBuilder.fromPath(PUT_EDITAR_USUARIO).buildAndExpand(parameters).toUri();
-
-		EditarUsuarioDTO editarUsuarioDTO = new EditarUsuarioDTOBuilder().permissao(Permissao.MASTER).build();
-
-		mockMVC.perform(put(putEditarUsuario).contentType(MediaType.APPLICATION_JSON)
-				.content(mapper.writeValueAsString(editarUsuarioDTO))).andDo(print()).andExpect(status().isNoContent());
-
-		verify(usuarioService, times(1)).editarUsuario(anyString(), any(EditarUsuarioDTO.class));
-
-	}
-
-	@Test
-	void deveEditarUsuarioApenasComOCampoSenha() throws JsonProcessingException, Exception {
-
-		Map<String, Object> parameters = new HashMap<>();
-		parameters.put("login", "usuarioTeste123");
-		URI putEditarUsuario = UriComponentsBuilder.fromPath(PUT_EDITAR_USUARIO).buildAndExpand(parameters).toUri();
-
-		EditarUsuarioDTO editarUsuarioDTO = new EditarUsuarioDTOBuilder().senha("testeSenha123").build();
+		EditarUsuarioDTO editarUsuarioDTO = new EditarUsuarioDTOBuilder().senha("senhaTeste123").build();
 
 		mockMVC.perform(put(putEditarUsuario).contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(editarUsuarioDTO))).andDo(print()).andExpect(status().isNoContent());
@@ -328,6 +270,63 @@ class UsuarioControllerTest {
 		assertNotNull(usuariosResponse);
 		assertThat(usuariosResponse.getUsuarios()).hasSize(50);
 		verify(usuarioService, times(1)).listarUsuarios();
+
+	}
+
+	@Test
+	void deveCriarUsuarioMaster() throws Exception {
+
+		NovoUsuarioMasterDTO novoUsuarioMasterDTO = new NovoUsuarioMasterDTOBuilder().login("loginTeste")
+				.senha("senhaTeste").build();
+
+		mockMVC.perform(post(POST_CRIAR_USUARIO_MASTER).contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(novoUsuarioMasterDTO))).andDo(print())
+				.andExpect(status().isNoContent());
+
+		verify(usuarioService, times(1)).criarUsuarioMaster(any(NovoUsuarioMasterDTO.class));
+
+	}
+
+	@Test
+	void naoDeveCriarUsuarioMasterPoisOCampoLoginNaoFoiFornecido() throws Exception {
+
+		NovoUsuarioMasterDTO novoUsuarioMasterDTO = new NovoUsuarioMasterDTOBuilder().senha("senhaTeste").build();
+
+		mockMVC.perform(post(POST_CRIAR_USUARIO_MASTER).contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(novoUsuarioMasterDTO))).andDo(print())
+				.andExpect(status().isBadRequest());
+
+		verify(usuarioService, never()).criarUsuarioMaster(any(NovoUsuarioMasterDTO.class));
+
+	}
+
+	@Test
+	void naoDeveCriarUsuarioMasterPoisOCampoSenhaNaoFoiFornecido() throws Exception {
+
+		NovoUsuarioMasterDTO novoUsuarioMasterDTO = new NovoUsuarioMasterDTOBuilder().login("loginTeste").build();
+
+		mockMVC.perform(post(POST_CRIAR_USUARIO_MASTER).contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(novoUsuarioMasterDTO))).andDo(print())
+				.andExpect(status().isBadRequest());
+
+		verify(usuarioService, never()).criarUsuarioMaster(any(NovoUsuarioMasterDTO.class));
+
+	}
+
+	@Test
+	void naoDeveCriarUsuarioMasterPoisUsuarioMasterJaFoiCriado() throws Exception {
+
+		doThrow(UsuarioMasterExistenteException.class).when(usuarioService)
+				.criarUsuarioMaster(any(NovoUsuarioMasterDTO.class));
+
+		NovoUsuarioMasterDTO novoUsuarioMasterDTO = new NovoUsuarioMasterDTOBuilder().login("loginTeste")
+				.senha("senhaTeste").build();
+
+		mockMVC.perform(post(POST_CRIAR_USUARIO_MASTER).contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(novoUsuarioMasterDTO))).andDo(print())
+				.andExpect(status().isConflict());
+
+		verify(usuarioService, times(1)).criarUsuarioMaster(any(NovoUsuarioMasterDTO.class));
 
 	}
 

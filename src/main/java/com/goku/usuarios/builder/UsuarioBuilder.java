@@ -13,9 +13,9 @@ public class UsuarioBuilder {
 	private String login;
 	private String senha;
 	private int quantidadeItens;
-	private String permissao;
 	private EditarUsuarioDTO editarUsuarioDTO;
 	private Usuario usuario;
+	private String permissao;
 
 	public UsuarioBuilder login(String login) {
 		this.login = login;
@@ -28,7 +28,7 @@ public class UsuarioBuilder {
 	}
 
 	public UsuarioBuilder permissao(String permissao) {
-		this.permissao = permissao.toUpperCase();
+		this.permissao = permissao;
 		return this;
 	}
 
@@ -69,10 +69,6 @@ public class UsuarioBuilder {
 	}
 
 	public Usuario modify() {
-
-		if (StringUtils.isNotBlank(editarUsuarioDTO.getPermissao())) {
-			usuario.setPermissao(editarUsuarioDTO.getPermissao().toUpperCase());
-		}
 
 		if (StringUtils.isNotBlank(editarUsuarioDTO.getSenha())) {
 			usuario.setSenha(editarUsuarioDTO.getSenha());

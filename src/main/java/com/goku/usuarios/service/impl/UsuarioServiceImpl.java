@@ -12,8 +12,11 @@ import com.goku.usuarios.builder.UsuarioBuilder;
 import com.goku.usuarios.dto.DetalheUsuarioDTO;
 import com.goku.usuarios.dto.EditarUsuarioDTO;
 import com.goku.usuarios.dto.NovoUsuarioDTO;
+import com.goku.usuarios.dto.NovoUsuarioMasterDTO;
 import com.goku.usuarios.dto.UsuarioDTO;
+import com.goku.usuarios.enums.Permissao;
 import com.goku.usuarios.exception.UsuarioDuplicadoException;
+import com.goku.usuarios.exception.UsuarioMasterExistenteException;
 import com.goku.usuarios.exception.UsuarioNotFoundException;
 import com.goku.usuarios.function.Usuario2DetalheUsuarioDTOFunction;
 import com.goku.usuarios.function.Usuario2UsuarioDTOFunction;
@@ -36,7 +39,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 		}
 
 		Usuario usuario = new UsuarioBuilder().login(novoUsuarioDTO.getLogin()).senha(novoUsuarioDTO.getSenha())
-				.permissao(novoUsuarioDTO.getPermissao()).build();
+				.permissao(Permissao.COMUM.name()).build();
 		usuarioRepository.save(usuario);
 
 	}
@@ -68,6 +71,19 @@ public class UsuarioServiceImpl implements UsuarioService {
 	public DetalheUsuarioDTO buscarUsuario(String login) {
 		return usuarioRepository.findById(login).map(new Usuario2DetalheUsuarioDTOFunction())
 				.orElseThrow(UsuarioNotFoundException::new);
+	}
+
+	@Override
+	public void criarUsuarioMaster(NovoUsuarioMasterDTO novoUsuarioMasterDTO) {
+
+		if (usuarioRepository.findByPermissao(Permissao.MASTER.name()).isPresent()) {
+			throw new UsuarioMasterExistenteException();
+		}
+
+		Usuario usuario = new UsuarioBuilder().login(novoUsuarioMasterDTO.getLogin())
+				.senha(novoUsuarioMasterDTO.getSenha()).permissao(Permissao.MASTER.name()).build();
+		usuarioRepository.save(usuario);
+
 	}
 
 }

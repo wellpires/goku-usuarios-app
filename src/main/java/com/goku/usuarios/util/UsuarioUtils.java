@@ -6,7 +6,6 @@ public class UsuarioUtils {
 
 	public static String hashPassword(String senha) {
 		return new BCryptPasswordEncoder().encode(senha);
-
 	}
 
 }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
 import com.goku.usuarios.util.UsuarioUtils;
 
@@ -17,6 +18,7 @@ public class Usuario implements Serializable {
 
 	private String senha;
 
+	@Indexed
 	private String permissao;
 
 	public String getLogin() {
