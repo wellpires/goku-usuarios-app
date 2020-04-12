@@ -10,7 +10,7 @@ public class Usuario2UsuarioDTOFunction implements Function<Usuario, UsuarioDTO>
 
 	@Override
 	public UsuarioDTO apply(Usuario usuario) {
-		return new UsuarioDTOBuilder().login(usuario.getLogin()).build();
+		return new UsuarioDTOBuilder().login(usuario.getLogin()).permissao(usuario.getPermissao()).build();
 	}
 
 }

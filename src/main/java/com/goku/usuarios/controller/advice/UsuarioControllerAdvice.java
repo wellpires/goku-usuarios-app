@@ -1,10 +1,13 @@
 package com.goku.usuarios.controller.advice;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,10 +41,13 @@ public class UsuarioControllerAdvice {
 
 		log.error(methodArgumentNotValidException.getMessage(), methodArgumentNotValidException);
 
+		ObjectError message = methodArgumentNotValidException.getBindingResult().getGlobalError();
+		if (Objects.nonNull(methodArgumentNotValidException.getBindingResult().getFieldError())) {
+			message = methodArgumentNotValidException.getBindingResult().getFieldError();
+		}
+
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-				.body(new ErrorResponseBuilder()
-						.message(methodArgumentNotValidException.getBindingResult().getFieldError().getDefaultMessage())
-						.build());
+				.body(new ErrorResponseBuilder().message(message.getDefaultMessage()).build());
 	}
 
 	@ExceptionHandler(UsuarioNotFoundException.class)

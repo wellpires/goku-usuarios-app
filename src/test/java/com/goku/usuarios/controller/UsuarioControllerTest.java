@@ -1,6 +1,7 @@
 package com.goku.usuarios.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -17,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -36,13 +38,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goku.usuarios.builder.DetalheUsuarioDTOBuilder;
 import com.goku.usuarios.builder.EditarUsuarioDTOBuilder;
 import com.goku.usuarios.builder.NovoUsuarioDTOBuilder;
+import com.goku.usuarios.builder.UsuarioDTOBuilder;
 import com.goku.usuarios.controller.advice.UsuarioControllerAdvice;
 import com.goku.usuarios.dto.DetalheUsuarioDTO;
 import com.goku.usuarios.dto.EditarUsuarioDTO;
 import com.goku.usuarios.dto.NovoUsuarioDTO;
+import com.goku.usuarios.dto.UsuarioDTO;
+import com.goku.usuarios.enums.Permissao;
 import com.goku.usuarios.exception.UsuarioDuplicadoException;
 import com.goku.usuarios.exception.UsuarioNotFoundException;
 import com.goku.usuarios.response.DetalheUsuarioResponse;
+import com.goku.usuarios.response.UsuariosResponse;
 import com.goku.usuarios.service.UsuarioService;
 
 @SpringBootTest
@@ -79,7 +85,7 @@ class UsuarioControllerTest {
 	void deveCriarUsuario() throws Exception {
 
 		NovoUsuarioDTO novoUsuarioDTOBuilt = new NovoUsuarioDTOBuilder().login("loginTeste123").senha("senhaTeste123")
-				.build();
+				.permissao(Permissao.COMUM).build();
 
 		mockMVC.perform(post(POST_CRIAR_USUARIO).contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(novoUsuarioDTOBuilt))).andDo(print())
@@ -95,7 +101,7 @@ class UsuarioControllerTest {
 		doThrow(UsuarioDuplicadoException.class).when(usuarioService).criarUsuario(any(NovoUsuarioDTO.class));
 
 		NovoUsuarioDTO novoUsuarioDTOBuilt = new NovoUsuarioDTOBuilder().login("loginTeste123").senha("senhaTeste123")
-				.build();
+				.permissao(Permissao.MASTER).build();
 
 		mockMVC.perform(post(POST_CRIAR_USUARIO).contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(novoUsuarioDTOBuilt))).andDo(print())
@@ -132,13 +138,42 @@ class UsuarioControllerTest {
 	}
 
 	@Test
+	void naoDeveCriarUsuarioPoisOCampoPermissaoNaoFoiFornecido() throws JsonProcessingException, Exception {
+
+		NovoUsuarioDTO novoUsuarioDTOBuilt = new NovoUsuarioDTOBuilder().login("loginTeste123").senha("senhaTeste123")
+				.build();
+
+		mockMVC.perform(post(POST_CRIAR_USUARIO).contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(novoUsuarioDTOBuilt))).andDo(print())
+				.andExpect(status().isBadRequest());
+
+		verify(usuarioService, never()).criarUsuario(any(NovoUsuarioDTO.class));
+
+	}
+
+	@Test
+	void naoDeveCriarUsuarioPoisOCampoPermissaoEstaInvalido() throws JsonProcessingException, Exception {
+
+		NovoUsuarioDTO novoUsuarioDTOBuilt = new NovoUsuarioDTOBuilder().login("loginTeste123").senha("senhaTeste123")
+				.permissao("permissaoTeste").build();
+
+		mockMVC.perform(post(POST_CRIAR_USUARIO).contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(novoUsuarioDTOBuilt))).andDo(print())
+				.andExpect(status().isBadRequest());
+
+		verify(usuarioService, never()).criarUsuario(any(NovoUsuarioDTO.class));
+
+	}
+
+	@Test
 	void deveEditarUsuario() throws Exception {
 
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("login", "usuarioTeste123");
 		URI putEditarUsuario = UriComponentsBuilder.fromPath(PUT_EDITAR_USUARIO).buildAndExpand(parameters).toUri();
 
-		EditarUsuarioDTO editarUsuarioDTO = new EditarUsuarioDTOBuilder().senha("senhaTeste123").build();
+		EditarUsuarioDTO editarUsuarioDTO = new EditarUsuarioDTOBuilder().senha("senhaTeste123")
+				.permissao(Permissao.MASTER).build();
 
 		mockMVC.perform(put(putEditarUsuario).contentType(MediaType.APPLICATION_JSON)
 				.content(mapper.writeValueAsString(editarUsuarioDTO))).andDo(print()).andExpect(status().isNoContent());
@@ -148,7 +183,39 @@ class UsuarioControllerTest {
 	}
 
 	@Test
-	void naoDeveEditarUsuarioPoisOCampoSenhaNaoFoiFornecido() throws JsonProcessingException, Exception {
+	void deveEditarUsuarioApenasComOCampoPermissao() throws JsonProcessingException, Exception {
+
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("login", "usuarioTeste123");
+		URI putEditarUsuario = UriComponentsBuilder.fromPath(PUT_EDITAR_USUARIO).buildAndExpand(parameters).toUri();
+
+		EditarUsuarioDTO editarUsuarioDTO = new EditarUsuarioDTOBuilder().permissao(Permissao.MASTER).build();
+
+		mockMVC.perform(put(putEditarUsuario).contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(editarUsuarioDTO))).andDo(print()).andExpect(status().isNoContent());
+
+		verify(usuarioService, times(1)).editarUsuario(anyString(), any(EditarUsuarioDTO.class));
+
+	}
+
+	@Test
+	void deveEditarUsuarioApenasComOCampoSenha() throws JsonProcessingException, Exception {
+
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("login", "usuarioTeste123");
+		URI putEditarUsuario = UriComponentsBuilder.fromPath(PUT_EDITAR_USUARIO).buildAndExpand(parameters).toUri();
+
+		EditarUsuarioDTO editarUsuarioDTO = new EditarUsuarioDTOBuilder().senha("testeSenha123").build();
+
+		mockMVC.perform(put(putEditarUsuario).contentType(MediaType.APPLICATION_JSON)
+				.content(mapper.writeValueAsString(editarUsuarioDTO))).andDo(print()).andExpect(status().isNoContent());
+
+		verify(usuarioService, times(1)).editarUsuario(anyString(), any(EditarUsuarioDTO.class));
+
+	}
+
+	@Test
+	void naoDeveEditarUsuarioPoisNenhumCampoFoiFornecido() throws JsonProcessingException, Exception {
 
 		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("login", "usuarioTeste123");
@@ -250,8 +317,16 @@ class UsuarioControllerTest {
 	@Test
 	void deveListarUsuarios() throws Exception {
 
-		mockMVC.perform(get(GET_LISTA_USUARIOS)).andDo(print()).andExpect(status().isOk());
+		List<UsuarioDTO> usuariosDTO = new UsuarioDTOBuilder().quantidadeItens(50).buidList();
+		when(usuarioService.listarUsuarios()).thenReturn(usuariosDTO);
 
+		MvcResult response = mockMVC.perform(get(GET_LISTA_USUARIOS)).andDo(print()).andExpect(status().isOk())
+				.andReturn();
+
+		UsuariosResponse usuariosResponse = mapper.readValue(response.getResponse().getContentAsString(),
+				UsuariosResponse.class);
+		assertNotNull(usuariosResponse);
+		assertThat(usuariosResponse.getUsuarios()).hasSize(50);
 		verify(usuarioService, times(1)).listarUsuarios();
 
 	}

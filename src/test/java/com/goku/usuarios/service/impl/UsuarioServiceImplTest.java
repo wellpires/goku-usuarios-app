@@ -24,6 +24,7 @@ import com.goku.usuarios.builder.UsuarioBuilder;
 import com.goku.usuarios.dto.DetalheUsuarioDTO;
 import com.goku.usuarios.dto.NovoUsuarioDTO;
 import com.goku.usuarios.dto.UsuarioDTO;
+import com.goku.usuarios.enums.Permissao;
 import com.goku.usuarios.exception.UsuarioDuplicadoException;
 import com.goku.usuarios.exception.UsuarioNotFoundException;
 import com.goku.usuarios.model.Usuario;
@@ -45,7 +46,8 @@ class UsuarioServiceImplTest {
 		Usuario usuarioBuilt = null;
 		when(usuarioRepository.findById(anyString())).thenReturn(Optional.ofNullable(usuarioBuilt));
 
-		NovoUsuarioDTO novoUsuarioDTO = new NovoUsuarioDTOBuilder().login("usuario123").senha("senha123").build();
+		NovoUsuarioDTO novoUsuarioDTO = new NovoUsuarioDTOBuilder().login("usuario123").senha("senha123")
+				.permissao(Permissao.COMUM).build();
 		usuarioService.criarUsuario(novoUsuarioDTO);
 
 		verify(usuarioRepository, times(1)).save(any());

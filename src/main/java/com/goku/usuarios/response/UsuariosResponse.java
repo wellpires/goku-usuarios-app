@@ -12,6 +12,9 @@ public class UsuariosResponse {
 		this.usuarios = usuarios;
 	}
 
+	public UsuariosResponse() {
+	}
+
 	public List<UsuarioDTO> getUsuarios() {
 		return usuarios;
 	}

@@ -36,7 +36,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 		}
 
 		Usuario usuario = new UsuarioBuilder().login(novoUsuarioDTO.getLogin()).senha(novoUsuarioDTO.getSenha())
-				.build();
+				.permissao(novoUsuarioDTO.getPermissao()).build();
 		usuarioRepository.save(usuario);
 
 	}
@@ -55,11 +55,13 @@ public class UsuarioServiceImpl implements UsuarioService {
 	}
 
 	@Override
+	@CacheEvict(cacheNames = { "listar-usuarios-cache" }, allEntries = true)
 	@CachePut(cacheNames = "usuario-cache")
 	public void editarUsuario(String login, EditarUsuarioDTO editarUsuarioDTO) {
 		Usuario usuario = usuarioRepository.findById(login).orElseThrow(UsuarioNotFoundException::new);
-		usuario.setSenha(editarUsuarioDTO.getSenha());
-		usuarioRepository.save(usuario);
+		Usuario usuarioChanged = new UsuarioBuilder().source(editarUsuarioDTO).target(usuario).modify();
+
+		usuarioRepository.save(usuarioChanged);
 	}
 
 	@Override
